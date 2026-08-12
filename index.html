@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cafe Equipment &amp; Furniture for Sale</title>
+<style>
+:root { --bg:#f6f4f0; --card:#fff; --ink:#26221c; --mut:#7a7365; --acc:#b3542e; --line:#e6e1d8; }
+* { box-sizing:border-box; margin:0; }
+body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); }
+header { padding:36px 20px 8px; max-width:1240px; margin:0 auto; }
+.topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+h1 { font-size:clamp(1.5rem,3.5vw,2.3rem); letter-spacing:-.02em; }
+.sub { color:var(--mut); margin-top:6px; }
+.langs { display:flex; gap:6px; }
+.langs button { border:1px solid var(--line); background:#fff; padding:7px 14px; border-radius:20px; cursor:pointer; font-weight:600; font-size:.85rem; }
+.langs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+.note { max-width:1240px; margin:18px auto 0; padding:0 20px; }
+.note>div { background:#fdf1e7; border:1px solid #f0d9c4; color:#7c4a22; border-radius:12px; padding:12px 16px; font-size:.9rem; line-height:1.45; }
+.filters { max-width:1240px; margin:18px auto 4px; padding:0 20px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.chip { border:1px solid var(--line); background:#fff; padding:6px 14px; border-radius:18px; cursor:pointer; font-size:.85rem; }
+.chip.on { background:var(--acc); border-color:var(--acc); color:#fff; }
+.count { color:var(--mut); font-size:.85rem; margin-left:auto; }
+main { max-width:1240px; margin:14px auto 60px; padding:0 20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(272px,1fr)); gap:20px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; transition:box-shadow .15s, transform .15s; }
+.card:hover { box-shadow:0 8px 24px rgba(0,0,0,.09); transform:translateY(-2px); }
+.ph { position:relative; aspect-ratio:4/3; background:#eceae5; overflow:hidden; }
+.ph img { width:100%; height:100%; object-fit:cover; display:block; cursor:zoom-in; }
+.ph img.hidden { display:none; }
+.badge { position:absolute; top:10px; left:10px; background:rgba(38,34,28,.82); color:#fff; font-size:.68rem; padding:4px 9px; border-radius:12px; letter-spacing:.03em; }
+.nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.85); border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:.8rem; display:flex; align-items:center; justify-content:center; }
+.prev { left:8px; } .next { right:8px; }
+.dots { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:5px; }
+.dots span { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.55); }
+.dots span.on { background:#fff; }
+.body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
+h3 { font-size:1rem; line-height:1.3; }
+.desc { font-size:.82rem; color:var(--mut); line-height:1.45; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.cond { font-size:.75rem; color:#4c8a52; font-weight:600; }
+.prices { margin-top:auto; border-top:1px dashed var(--line); padding-top:10px; display:flex; flex-direction:column; gap:4px; }
+.prow { display:flex; justify-content:space-between; gap:10px; font-size:.78rem; color:var(--mut); }
+.prow.main { font-size:.95rem; color:var(--ink); }
+.prow.main b { color:var(--acc); font-size:1.05rem; }
+.src { font-style:normal; font-size:.7rem; color:#a49a89; }
+.l-pt,.l-ua { display:none; }
+html[data-lang="pt"] .l-en,html[data-lang="pt"] .l-ua { display:none; }
+html[data-lang="pt"] .l-pt { display:inline; }
+html[data-lang="ua"] .l-en,html[data-lang="ua"] .l-pt { display:none; }
+html[data-lang="ua"] .l-ua { display:inline; }
+#lb { position:fixed; inset:0; background:rgba(20,17,12,.9); display:none; align-items:center; justify-content:center; z-index:50; cursor:zoom-out; }
+#lb img { max-width:92vw; max-height:92vh; border-radius:8px; }
+#lb.open { display:flex; }
+footer { text-align:center; color:var(--mut); font-size:.8rem; padding:0 20px 40px; }
+</style>
+</head>
+<body>
+<header>
+<div class="topbar">
+<div><h1 data-l="title"></h1><p class="sub" data-l="subtitle"></p></div>
+<div class="langs">
+<button data-lang="en" class="on" onclick="setLang('en')">EN</button>
+<button data-lang="pt" onclick="setLang('pt')">PT</button>
+<button data-lang="ua" onclick="setLang('ua')">УКР</button>
+</div>
+</div>
+</header>
+<div class="note"><div data-l="note"></div></div>
+<div class="filters"><button class="chip on" data-f="*" onclick="flt(this)"><span data-l="all"></span></button><button class="chip" data-f="Catering" onclick="flt(this)"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></button><button class="chip" data-f="Refrigeration" onclick="flt(this)"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></button><button class="chip" data-f="Furniture" onclick="flt(this)"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></button><button class="chip" data-f="Electronics" onclick="flt(this)"><span class="l-en">Electronics</span><span class="l-pt">Eletronica</span><span class="l-ua">Електроніка</span></button><button class="chip" data-f="POS / Retail" onclick="flt(this)"><span class="l-en">POS / Retail</span><span class="l-pt">POS / Comercio</span><span class="l-ua">POS / Торгівля</span></button><button class="chip" data-f="Climate / HVAC" onclick="flt(this)"><span class="l-en">Climate / HVAC</span><span class="l-pt">Climatizacao</span><span class="l-ua">Клімат</span></button><span class="count"><b id="n"></b> <span data-l="items"></span></span></div>
+<main id="grid">
+<article class="card" data-cat="Catering">
+<div class="ph"><img src="images/espresso-machine-2-group-1.jpg" alt="Commercial 2-Group Espresso Machine" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Commercial 2-Group Espresso Machine</span><span class="l-pt">Maquina de Cafe Profissional de 2 Grupos</span><span class="l-ua">Професійна еспресо-машина на 2 групи</span></h3>
+<p class="desc"><span class="l-en">Professional 2-group espresso coffee machine in stainless steel (NovoDia / Rimini). Twin brew groups, steam and hot-water wands, cup warmer on top and pressure gauge - built for the volume of a busy cafe or bar.</span><span class="l-pt">Maquina de cafe expresso profissional de 2 grupos em aco inoxidavel (NovoDia / Rimini). Dois grupos de extracao, lancas de vapor e agua quente, aquecedor de chavenas no topo e manometro - feita para o volume de um cafe ou bar movimentado.</span><span class="l-ua">Кавомашина з нержавіючої сталі (NovoDia / Rimini): 2 групи, парова та водяна трубки, підігрів чашок, манометр — для завантаженого кафе чи бару.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€450–800</b></div><div class="prow"><span data-l="olx"></span><span>€285-900 (mostly 450-800)</span></div><div class="prow"><span data-l="newprice"></span><span>€1650 <i class="src">(GGM Gastro (STEMF2))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/glass-washer-fiamma-1.jpg" alt="Commercial Glass Washer (Fiamma f1221/N)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/glass-washer-fiamma-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Commercial Glass Washer (Fiamma f1221/N)</span><span class="l-pt">Maquina de Lavar Copos Profissional (Fiamma f1221/N)</span><span class="l-ua">Машина для миття склянок Fiamma f1221/N</span></h3>
+<p class="desc"><span class="l-en">Compact under-counter commercial glass washer by Fiamma (model f1221/N) in stainless steel AISI 304. Fast ~2-minute cycle, up to ~600 glasses/hour - perfect for a bar, pub or cafe. Low water and energy use.</span><span class="l-pt">Maquina de lavar copos profissional compacta, de bancada, da Fiamma (modelo f1221/N) em aco inox AISI 304. Ciclo rapido de ~2 minutos, ate ~600 copos/hora - perfeita para bar, pub ou cafe. Baixo consumo de agua e energia.</span><span class="l-ua">Компактна професійна машина для миття склянок, нержавіюча сталь AISI 304. Цикл ~2 хв, до ~600 склянок/год — для бару чи кафе.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€300–550</b></div><div class="prow"><span data-l="olx"></span><span>€150-700 (mostly 300-500)</span></div><div class="prow"><span data-l="newprice"></span><span>€934 <i class="src">(GGM Gastro (GLS300M))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/convection-oven-unox-anna-1.jpg" alt="Convection Oven (UNOX Anna)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Convection Oven (UNOX Anna)</span><span class="l-pt">Forno de Conveccao (UNOX Anna)</span><span class="l-ua">Конвекційна піч UNOX Anna</span></h3>
+<p class="desc"><span class="l-en">Electric countertop convection oven, UNOX Anna line (XF023). Fits four 460x330 mm trays with a glass door and manual controls - a compact, reliable oven for bakes, pastries and reheating in a cafe or kitchen.</span><span class="l-pt">Forno de conveccao eletrico de bancada, linha UNOX Anna (XF023). Aceita quatro tabuleiros de 460x330 mm, com porta de vidro e comandos manuais - um forno compacto e fiavel para fornadas, pastelaria e regeneracao em cafe ou cozinha.</span><span class="l-ua">Настільна електрична конвекційна піч (XF023) на чотири дека 460×330 мм, скляні дверцята — компактна й надійна для випічки.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€250–450</b></div><div class="prow"><span data-l="olx"></span><span>€150-450</span></div><div class="prow"><span data-l="newprice"></span><span>€750 <i class="src">(UNOX (official list price))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/prep-sink-stainless-1.jpg" alt="Professional Stainless Steel Sink Unit" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Professional Stainless Steel Sink Unit</span><span class="l-pt">Lava-Loica Profissional em Inox</span><span class="l-ua">Професійна мийка з нержавіючої сталі</span></h3>
+<p class="desc"><span class="l-en">Commercial stainless steel sink unit with a large single bowl and an integrated left-hand drainboard/prep surface, on an open under-shelf frame - built for a busy kitchen wash area. (Pre-rinse spray tap is listed separately.)</span><span class="l-pt">Lava-loica profissional em aco inox com cuba unica grande e escorredor/superficie de preparacao integrada do lado esquerdo, sobre estrutura aberta com prateleira inferior - concebido para uma zona de lavagem movimentada. (A torneira de pre-lavagem e vendida separadamente.)</span><span class="l-ua">Промислова мийка з великою чашею та інтегрованою сушкою/робочою поверхнею ліворуч, на відкритій рамі з полицею.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€200–450</b></div><div class="prow"><span data-l="olx"></span><span>€200-590</span></div><div class="prow"><span data-l="newprice"></span><span>€415 <i class="src">(GGM Gastro (STK126))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/ice-maker-ggm-1.jpg" alt="Ice Maker (GGM Gastro)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Ice Maker (GGM Gastro)</span><span class="l-pt">Maquina de Gelo (GGM Gastro)</span><span class="l-ua">Льодогенератор GGM Gastro</span></h3>
+<p class="desc"><span class="l-en">Compact stainless steel ice maker by GGM Gastro. Countertop / undercounter unit with front indicator panel - produces ice cubes for a bar, cafe or restaurant on demand.</span><span class="l-pt">Maquina de gelo compacta em aco inox da GGM Gastro. Unidade de bancada / de encastrar com painel indicador frontal - produz cubos de gelo para bar, cafe ou restaurante quando necessario.</span><span class="l-ua">Компактний льодогенератор з нержавіючої сталі з вбудованим бункером — кубики льоду для бару, кафе чи ресторану.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€150–350</b></div><div class="prow"><span data-l="olx"></span><span>€70-450</span></div><div class="prow"><span data-l="newprice"></span><span>€864 <i class="src">(GGM Gastro (EBH1706, 20 kg/day))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/stainless-storage-cabinet-ggm-1.jpg" alt="Stainless Steel Storage Cabinet (GGM Gastro)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Stainless Steel Storage Cabinet (GGM Gastro)</span><span class="l-pt">Armario de Arrumacao em Inox (GGM Gastro)</span><span class="l-ua">Шафа з нержавіючої сталі (GGM Gastro)</span></h3>
+<p class="desc"><span class="l-en">Tall stainless steel storage cabinet by GGM Gastro with sliding doors and internal shelves. Fully hygienic enclosed storage for crockery, utensils and stock in a professional kitchen or bar.</span><span class="l-pt">Armario de arrumacao alto em aco inox da GGM Gastro, com portas de correr e prateleiras interiores. Arrumacao fechada e higienica para louca, utensilios e stock em cozinha profissional ou bar.</span><span class="l-ua">Висока шафа з розсувними дверцятами та полицями — закрите гігієнічне зберігання посуду й запасів.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€150–350</b></div><div class="prow"><span data-l="olx"></span><span>€125-400</span></div><div class="prow"><span data-l="newprice"></span><span>€422 <i class="src">(GGM Gastro (GSK1060))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/induction-cooktops-1.jpg" alt="Professional Induction Cooktops (x2)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Professional Induction Cooktops (x2)</span><span class="l-pt">Placas de Inducao Profissionais (x2)</span><span class="l-ua">Професійні індукційні плити (2 шт.)</span></h3>
+<p class="desc"><span class="l-en">Two countertop professional induction hobs - one GGM Gastro (digital display, timer) and one Metro Professional (dial control). Fast, precise and energy-efficient single-zone cooking for a cafe, bar or show kitchen. Sold together.</span><span class="l-pt">Duas placas de inducao profissionais de bancada - uma GGM Gastro (visor digital, temporizador) e uma Metro Professional (comando rotativo). Cozedura de zona unica rapida, precisa e eficiente para cafe, bar ou cozinha a vista. Vendidas em conjunto.</span><span class="l-ua">Дві настільні індукційні плити — GGM Gastro (цифровий дисплей, таймер) і Metro Professional (поворотний регулятор). Продаються разом.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€150–300</b></div><div class="prow"><span data-l="olx"></span><span>€120-306 each</span></div><div class="prow"><span data-l="newprice"></span><span>€270 <i class="src">(GGM Gastro (2x IDS1))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/stainless-prep-table-2m-1.jpg" alt="Stainless Steel Prep / Bar Table (~2 m)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/stainless-prep-table-2m-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/stainless-prep-table-2m-3.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span><span></span></div><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Stainless Steel Prep / Bar Table (~2 m)</span><span class="l-pt">Bancada de Preparacao / Bar em Inox (~2 m)</span><span class="l-ua">Виробничий стіл з нержавіючої сталі (~2 м)</span></h3>
+<p class="desc"><span class="l-en">Long stainless steel work table (approx. 2 m) with a lower storage shelf. Hygienic and hard-wearing - ideal as a back-bar counter, kitchen prep bench or storage table in a cafe, bar or restaurant.</span><span class="l-pt">Bancada de trabalho comprida em aco inox (aprox. 2 m) com prateleira inferior de arrumacao. Higienica e resistente - ideal como balcao de retaguarda de bar, bancada de preparacao de cozinha ou mesa de apoio em cafe, bar ou restaurante.</span><span class="l-ua">Довгий робочий стіл (~2 м) з нижньою полицею. Гігієнічний і зносостійкий — для кухні чи бару. Є кілька; ціна за стіл.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€150–300</b></div><div class="prow"><span data-l="olx"></span><span>€150-450</span></div><div class="prow"><span data-l="newprice"></span><span>€210 <i class="src">(GGM Gastro (ATK206/207))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/filter-coffee-machine-moccamaster-1.jpg" alt="Moccamaster Filter Coffee Machine" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/filter-coffee-machine-moccamaster-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Moccamaster Filter Coffee Machine</span><span class="l-pt">Maquina de Cafe de Filtro Moccamaster</span><span class="l-ua">Крапельна кавоварка Moccamaster</span></h3>
+<p class="desc"><span class="l-en">Technivorm Moccamaster KBG Select filter coffee machine in matt black - 1.25 L glass carafe, 1520W, handmade in the Netherlands. Perfect condition.</span><span class="l-pt">Maquina de cafe de filtro Technivorm Moccamaster KBG Select, preto mate - jarro de vidro de 1,25 L, 1520W, fabricada nos Paises Baixos. Em estado perfeito.</span><span class="l-ua">Technivorm Moccamaster KBG Select, матово-чорна — скляний глек 1,25 л, 1520 Вт, зроблена в Нідерландах. Ідеальний стан.</span></p>
+<p class="cond"><span class="l-en">Used, perfect</span><span class="l-pt">Usado, estado perfeito</span><span class="l-ua">Вживаний, ідеальний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€140–220</b></div><div class="prow"><span data-l="olx"></span><span>€280 (only used Moccamaster on olx.pt)</span></div><div class="prow"><span data-l="newprice"></span><span>€130 <i class="src">(GGM Gastro (filter coffee machine))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/contact-grill-ggm-1.jpg" alt="Panini / Contact Grill (GGM Gastro)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Panini / Contact Grill (GGM Gastro)</span><span class="l-pt">Grelhador de Contacto / Panini (GGM Gastro)</span><span class="l-ua">Контактний гриль / паніні (GGM Gastro)</span></h3>
+<p class="desc"><span class="l-en">Electric contact grill by GGM Gastro with ribbed cast plates and an adjustable thermostat. Ideal for paninis, toasties, sandwiches and grilled snacks in a cafe, bar or snack bar.</span><span class="l-pt">Grelhador de contacto eletrico da GGM Gastro com placas em ferro fundido ranhuradas e termostato ajustavel. Ideal para paninis, tostas, sandes e petiscos grelhados em cafe, bar ou snack-bar.</span><span class="l-ua">Електричний контактний гриль з ребристими чавунними плитами та регульованим термостатом — для паніні, тостів і сендвічів.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€90–180</b></div><div class="prow"><span data-l="olx"></span><span>€95-350</span></div><div class="prow"><span data-l="newprice"></span><span>€95 <i class="src">(GGM Gastro (KGJ432))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/pre-rinse-spray-tap-1.jpg" alt="Professional Pre-Rinse Spray Tap" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Professional Pre-Rinse Spray Tap</span><span class="l-pt">Torneira Profissional de Pre-Lavagem</span><span class="l-ua">Професійний душ-змішувач для мийки</span></h3>
+<p class="desc"><span class="l-en">Commercial pre-rinse spray tap (dishwash spray) with spring-arm hose and high-pressure spray head - for rinsing dishes, pots and trays. Chrome body with hot &amp; cold mixer and an add-on swing faucet.</span><span class="l-pt">Torneira profissional de pre-lavagem (chuveiro de loica) com braco de mola e cabeca de duche de alta pressao - para enxaguar loica, panelas e tabuleiros. Corpo cromado com misturadora de agua quente e fria e torneira auxiliar.</span><span class="l-ua">Душуючий змішувач з пружинним кронштейном для ополіскування посуду та лотків. Хромований, гаряча/холодна вода.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€70–180</b></div><div class="prow"><span data-l="olx"></span><span>€85-215</span></div><div class="prow"><span data-l="newprice"></span><span>€143 <i class="src">(GGM Gastro)</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/stainless-equipment-stand-1.jpg" alt="Stainless Steel Equipment Stand / Tray Rack" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Stainless Steel Equipment Stand / Tray Rack</span><span class="l-pt">Suporte / Estante em Inox para Equipamento</span><span class="l-ua">Підставка для обладнання (нерж. сталь)</span></h3>
+<p class="desc"><span class="l-en">Heavy stainless steel equipment stand with side runners for GN trays and racks - designed to support a countertop oven or serve as a tray rack in a prep area. On castors for easy moving. (Oven shown for scale is listed separately.)</span><span class="l-pt">Suporte robusto em aco inox com guias laterais para tabuleiros e grelhas GN - concebido para suportar um forno de bancada ou servir de estante de tabuleiros numa zona de preparacao. Com rodas para facil deslocacao. (O forno na imagem, para referencia, e vendido separadamente.)</span><span class="l-ua">Міцна підставка з напрямними для дек GN, на колесах — під настільну піч або як стелаж для лотків.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€80–180</b></div><div class="prow"><span data-l="olx"></span><span>€80-200</span></div><div class="prow"><span data-l="newprice"></span><span>€174 <i class="src">(GGM Gastro (TWH1811N))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/waffle-maker-ggm-1.jpg" alt="Waffle Maker (GGM Gastro)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Waffle Maker (GGM Gastro)</span><span class="l-pt">Maquina de Waffles (GGM Gastro)</span><span class="l-ua">Вафельниця GGM Gastro</span></h3>
+<p class="desc"><span class="l-en">Commercial round waffle maker by GGM Gastro with non-stick cast plates and thermostat control. Makes bubble/round waffles quickly - a great add-on for a cafe, snack bar or dessert counter.</span><span class="l-pt">Maquina de waffles redondos profissional da GGM Gastro, com placas antiaderentes em ferro fundido e controlo por termostato. Faz waffles redondos rapidamente - um otimo complemento para cafe, snack-bar ou balcao de sobremesas.</span><span class="l-ua">Професійна кругла вафельниця з антипригарними чавунними плитами та термостатом.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€70–150</b></div><div class="prow"><span data-l="olx"></span><span>€75-250</span></div><div class="prow"><span data-l="newprice"></span><span>€158 <i class="src">(GGM Gastro (WDJ180))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/pastry-display-case-acrylic-1.jpg" alt="Acrylic Countertop Pastry Display" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Acrylic Countertop Pastry Display</span><span class="l-pt">Vitrine de Pastelaria em Acrilico (Balcao)</span><span class="l-ua">Акрилова вітрина для випічки</span></h3>
+<p class="desc"><span class="l-en">Clear acrylic countertop display case with multiple sliding trays. Perfect for showing off cookies, pastries, croissants and cakes on the counter while keeping them covered. Lightweight and easy to clean.</span><span class="l-pt">Vitrine de balcao em acrilico transparente com varios tabuleiros deslizantes. Perfeita para expor bolachas, bolos, croissants e doces no balcao, mantendo-os protegidos. Leve e facil de limpar.</span><span class="l-ua">Прозора настільна вітрина з висувними лотками — для печива, круасанів і тістечок. Легка та проста в догляді.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–120</b></div><div class="prow"><span data-l="olx"></span><span>€35-175</span></div><div class="prow"><span data-l="newprice"></span><span>€237 <i class="src">(Amazon)</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/coffee-grinder-amzchef-1.jpg" alt="AMZCHEF Electric Burr Coffee Grinder" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/coffee-grinder-amzchef-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">AMZCHEF Electric Burr Coffee Grinder</span><span class="l-pt">Moinho de Cafe Eletrico AMZCHEF (mos)</span><span class="l-ua">Електрична жорнова кавомолка AMZCHEF</span></h3>
+<p class="desc"><span class="l-en">Electric conical burr coffee grinder (AMZCHEF CG209) with digital display and grind scale from espresso to pour-over. 150W, stainless steel body.</span><span class="l-pt">Moinho de cafe eletrico de mos conicas (AMZCHEF CG209) com visor digital e escala de moagem de espresso a pour-over. 150W, corpo em inox.</span><span class="l-ua">Кавомолка з конічними жорнами (AMZCHEF CG209), цифровий дисплей, шкала помелу від еспресо до пуроверу. 150 Вт, корпус з нержавіючої сталі.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€25–50</b></div><div class="prow"><span data-l="olx"></span><span>€15-50 (used electric burr grinders)</span></div><div class="prow"><span data-l="newprice"></span><span>€230 <i class="src">(GGM Gastro (1 kg grinder))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Catering">
+<div class="ph"><img src="images/plates-and-cups-1.jpg" alt="Large Lot of Plates and Cups" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Catering</span><span class="l-pt">Restauracao</span><span class="l-ua">HoReCa / кухня</span></span></div>
+<div class="body">
+<h3><span class="l-en">Large Lot of Plates and Cups</span><span class="l-pt">Grande Lote de Pratos e Chavenas</span><span class="l-ua">Великий лот тарілок і чашок</span></h3>
+<p class="desc"><span class="l-en">100+ pieces of crockery - plates and cups in mixed sizes, shapes and designs. Sold as one lot.</span><span class="l-pt">Mais de 100 pecas de louca - pratos e chavenas de varios tamanhos, formas e designs. Vende-se como lote.</span><span class="l-ua">Понад 100 одиниць посуду — тарілки та чашки різних розмірів, форм і дизайнів. Продається одним лотом.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><b data-l="onrequest"></b></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/refrigerated-prep-counter-granite-1.jpg" alt="Refrigerated Prep Counter / Saladette (granite top, 3 doors)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/refrigerated-prep-counter-granite-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Refrigerated Prep Counter / Saladette (granite top, 3 doors)</span><span class="l-pt">Bancada Refrigerada de Preparacao / Saladete (tampo em granito, 3 portas)</span><span class="l-ua">Холодильний стіл / саладетта (граніт, 3 двері)</span></h3>
+<p class="desc"><span class="l-en">Professional refrigerated preparation counter (saladette / pizza prep) with a heavy granite worktop, three refrigerated doors below and a chilled GN pan rail along the back - ideal for pizza, salad and sandwich prep. Robust stainless body.</span><span class="l-pt">Bancada refrigerada de preparacao profissional (saladete / preparacao de pizza) com tampo pesado em granito, tres portas refrigeradas em baixo e calha refrigerada para cubas GN atras - ideal para preparar pizza, saladas e sandes. Corpo robusto em inox.</span><span class="l-ua">Професійний холодильний стіл із гранітною стільницею, трьома дверцятами та охолоджуваною рейкою GN — для піци, салатів, сендвічів.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€650–1000</b></div><div class="prow"><span data-l="olx"></span><span>€815-1550 (granite/pizza)</span></div><div class="prow"><span data-l="newprice"></span><span>€649 <i class="src">(GGM Gastro (SAG147GND, granite))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/refrigerated-display-cabinet-1.jpg" alt="Refrigerated Counter Display Cabinet" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/refrigerated-display-cabinet-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Refrigerated Counter Display Cabinet</span><span class="l-pt">Vitrine Refrigerada de Balcao</span><span class="l-ua">Настільна холодильна вітрина</span></h3>
+<p class="desc"><span class="l-en">Curved-glass refrigerated counter display (Makro GCV1100) for cakes, pastries, sandwiches and cold drinks. Black body with LED-lit interior shelf and clear curved front for maximum visibility.</span><span class="l-pt">Vitrine refrigerada de balcao com vidro curvo (Makro GCV1100) para bolos, pastelaria, sandes e bebidas frias. Corpo preto com prateleira interior iluminada por LED e frente curva transparente para maxima visibilidade.</span><span class="l-ua">Холодильна вітрина з гнутим склом (Makro GCV1100) для тортів, випічки, сендвічів і напоїв. LED-підсвітка.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€250–450</b></div><div class="prow"><span data-l="olx"></span><span>€270-570</span></div><div class="prow"><span data-l="newprice"></span><span>€421 <i class="src">(GGM Gastro (VDNR1043))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/chest-freezer-large-1.jpg" alt="Large Chest Freezer" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/chest-freezer-large-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Large Chest Freezer</span><span class="l-pt">Arca Congeladora Horizontal Grande</span><span class="l-ua">Велика морозильна скриня</span></h3>
+<p class="desc"><span class="l-en">Large-capacity chest freezer for serious frozen storage - perfect for a busy cafe, restaurant or catering operation. Top-opening lid, adjustable thermostat and indicator lights. Lots of space at a low price.</span><span class="l-pt">Arca congeladora de grande capacidade para armazenamento serio de congelados - perfeita para cafe, restaurante ou catering movimentado. Tampa de abertura superior, termostato ajustavel e luzes indicadoras. Muito espaco a um preco baixo.</span><span class="l-ua">Морозильна скриня великої місткості з верхньою кришкою, термостатом та індикаторами — ідеальна для кафе, ресторану чи кейтерингу.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€150–320</b></div><div class="prow"><span data-l="olx"></span><span>€230-500 (industrial)</span></div><div class="prow"><span data-l="newprice"></span><span>€959 <i class="src">(Makro (470 L commercial))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/upright-fridge-inox-1.jpg" alt="Tall Larder Fridge (stainless/grey)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/upright-fridge-inox-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Tall Larder Fridge (stainless/grey)</span><span class="l-pt">Frigorifico Vertical (inox/cinza)</span><span class="l-ua">Високий холодильник (інокс/сірий)</span></h3>
+<p class="desc"><span class="l-en">Tall single-door larder fridge in a stainless/grey finish - full-height fresh food storage with glass shelves and door balconies. Great for a kitchen, cafe or utility area.</span><span class="l-pt">Frigorifico vertical de uma porta em acabamento inox/cinza - armazenamento de alimentos frescos de altura total, com prateleiras de vidro e suportes na porta. Otimo para cozinha, cafe ou zona de servico.</span><span class="l-ua">Однодверний холодильник у сталевому/сірому виконанні зі скляними полицями та балконами на дверцятах.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€120–280</b></div><div class="prow"><span data-l="olx"></span><span>€110-495</span></div><div class="prow"><span data-l="newprice"></span><span>€600 <i class="src">(GGM Gastro (KSS400N, approx.))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/upright-fridge-whirlpool-1.jpg" alt="Tall Upright Larder Fridge (Whirlpool)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Tall Upright Larder Fridge (Whirlpool)</span><span class="l-pt">Frigorifico Vertical Alto (Whirlpool)</span><span class="l-ua">Високий холодильник Whirlpool</span></h3>
+<p class="desc"><span class="l-en">Full-height single-door larder fridge by Whirlpool in white, with a digital display. Generous vertical storage for drinks and food - great for a cafe, shop, office kitchen or home.</span><span class="l-pt">Frigorifico vertical de uma porta, altura total, da Whirlpool, em branco, com visor digital. Amplo armazenamento vertical para bebidas e alimentos - otimo para cafe, loja, copa de escritorio ou casa.</span><span class="l-ua">Білий однодверний холодильник на всю висоту з цифровим дисплеєм — містке зберігання напоїв і продуктів.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€130–260</b></div><div class="prow"><span data-l="olx"></span><span>€60-300</span></div><div class="prow"><span data-l="newprice"></span><span>€650 <i class="src">(Web search (Whirlpool SW8 350 L))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/undercounter-freezer-stainless-1.jpg" alt="Stainless Steel Undercounter Freezer" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/undercounter-freezer-stainless-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Stainless Steel Undercounter Freezer</span><span class="l-pt">Arca Congeladora de Bancada em Inox</span><span class="l-ua">Морозильник під стільницю (нерж.)</span></h3>
+<p class="desc"><span class="l-en">Compact undercounter freezer (Arsent) in stainless steel with a solid door and digital temperature display. Adjustable interior shelves - ideal to fit under a bar or prep counter in a cafe, bar or kitchen.</span><span class="l-pt">Congelador compacto de bancada (Arsent) em aco inoxidavel, com porta cega e visor digital de temperatura. Prateleiras interiores ajustaveis - ideal para encaixar sob um balcao ou bancada de preparacao em cafe, bar ou cozinha.</span><span class="l-ua">Компактний морозильник Arsent з нержавіючої сталі з глухими дверцятами та цифровим дисплеєм. Регульовані полиці.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€120–220</b></div><div class="prow"><span data-l="olx"></span><span>€120-400</span></div><div class="prow"><span data-l="newprice"></span><span>€910 <i class="src">(GGM Gastro)</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/upright-freezer-becken-1.jpg" alt="Upright Freezer (Becken)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/upright-freezer-becken-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Upright Freezer (Becken)</span><span class="l-pt">Arca Congeladora Vertical (Becken)</span><span class="l-ua">Вертикальний морозильник Becken</span></h3>
+<p class="desc"><span class="l-en">Tall white upright freezer by Becken with several pull-out drawers and a digital temperature display - practical vertical frozen storage for a small kitchen or cafe. Working, with good cold performance.</span><span class="l-pt">Arca congeladora vertical alta da Becken, branca, com varias gavetas e visor digital de temperatura - armazenamento de congelados pratico para uma cozinha ou cafe pequeno. A funcionar, com bom desempenho de frio.</span><span class="l-ua">Висока біла морозильна шафа з висувними шухлядами та цифровим дисплеєм — практичне вертикальне зберігання.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€90–200</b></div><div class="prow"><span data-l="olx"></span><span>€50-280</span></div><div class="prow"><span data-l="newprice"></span><span>€390 <i class="src">(Worten (Becken BUF4869))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Refrigeration">
+<div class="ph"><img src="images/chest-freezer-medium-1.jpg" alt="Chest Freezer (Medium)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/chest-freezer-medium-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Refrigeration</span><span class="l-pt">Refrigeracao</span><span class="l-ua">Холодильне обладнання</span></span></div>
+<div class="body">
+<h3><span class="l-en">Chest Freezer (Medium)</span><span class="l-pt">Arca Congeladora Horizontal (Media)</span><span class="l-ua">Морозильна скриня (середня)</span></h3>
+<p class="desc"><span class="l-en">Top-opening chest freezer, ideal for bulk frozen storage in a cafe, bar or home. Simple thermostat control, large usable interior and low running cost. A dependable workhorse freezer.</span><span class="l-pt">Arca congeladora de abertura superior, ideal para armazenamento de congelados em cafe, bar ou casa. Controlo simples por termostato, amplo interior util e baixo consumo. Uma arca fiavel para o dia a dia.</span><span class="l-ua">Скриня з верхнім відкриванням для запасів заморожених продуктів у кафе, барі чи вдома. Простий термостат, місткий інтер&#x27;єр.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€80–150</b></div><div class="prow"><span data-l="olx"></span><span>€40-175</span></div><div class="prow"><span data-l="newprice"></span><span>€299 <i class="src">(Worten (Indesit 250 L))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/dining-table-large-wood-1.jpg" alt="Large Dining / Communal Table (Wood Top)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/dining-table-large-wood-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Large Dining / Communal Table (Wood Top)</span><span class="l-pt">Mesa Grande de Refeicao / Comunitaria (Tampo em Madeira)</span><span class="l-ua">Великий обідній стіл (дерев&#x27;яна стільниця)</span></h3>
+<p class="desc"><span class="l-en">Large rectangular table with a walnut-effect wood top and a sturdy black metal base. Seats around 8-10 people, perfect for a cafe, restaurant, meeting room or large family kitchen.</span><span class="l-pt">Mesa retangular grande com tampo efeito nogueira e base robusta em metal preto. Acomoda cerca de 8-10 pessoas, perfeita para cafe, restaurante, sala de reunioes ou cozinha familiar ampla.</span><span class="l-ua">Великий прямокутний стіл зі стільницею під горіх на чорній металевій основі, на 8–10 осіб.</span></p>
+<p class="cond"><span class="l-en">Used, minor marks</span><span class="l-pt">Usado, marcas ligeiras</span><span class="l-ua">Вживаний, незначні сліди</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€120–250</b></div><div class="prow"><span data-l="olx"></span><span>€100-280</span></div><div class="prow"><span data-l="newprice"></span><span>€799 <i class="src">(IKEA (MORBYLANGA 220 cm))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/dining-table-large-black-1.jpg" alt="Large Black Dining Table" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/dining-table-large-black-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Large Black Dining Table</span><span class="l-pt">Mesa Grande de Refeicao Preta</span><span class="l-ua">Великий чорний обідній стіл</span></h3>
+<p class="desc"><span class="l-en">Substantial dark/black wood dining table with solid legs. Long surface that comfortably seats 8-10, ideal for a restaurant, cafe or large dining space. Shows some surface wear typical of use.</span><span class="l-pt">Mesa de refeicao robusta em madeira escura/preta com pernas solidas. Superficie longa que acomoda confortavelmente 8-10 pessoas, ideal para restaurante, cafe ou espaco de refeicao amplo. Apresenta desgaste de superficie tipico do uso.</span><span class="l-ua">Масивний стіл з темного дерева на 8–10 місць — для ресторану, кафе чи великої їдальні. Помітні сліди використання.</span></p>
+<p class="cond"><span class="l-en">Used, visible wear</span><span class="l-pt">Usado, desgaste visivel</span><span class="l-ua">Вживаний, помітні сліди</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€90–180</b></div><div class="prow"><span data-l="olx"></span><span>€100-280</span></div><div class="prow"><span data-l="newprice"></span><span>€300 <i class="src">(IKEA (comparable large table))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/cube-shelving-unit-1.jpg" alt="Cube Shelving Unit (4x4)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Cube Shelving Unit (4x4)</span><span class="l-pt">Estante de Cubos (4x4)</span><span class="l-ua">Стелаж-куби 4×4</span></h3>
+<p class="desc"><span class="l-en">Large white 4x4 cube shelving unit (16 compartments). Versatile open storage / display shelving - great for board games, books, retail products or organising a shop, cafe or office. Doubles as a room divider.</span><span class="l-pt">Estante de cubos grande em branco, 4x4 (16 compartimentos). Arrumacao/exposicao aberta e versatil - otima para jogos de tabuleiro, livros, produtos de loja ou para organizar loja, cafe ou escritorio. Serve tambem de divisoria.</span><span class="l-ua">Великий білий стелаж на 16 відкритих секцій — універсальне зберігання чи вітрина, підходить і як перегородка.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€60–120</b></div><div class="prow"><span data-l="olx"></span><span>€80-130</span></div><div class="prow"><span data-l="newprice"></span><span>€149 <i class="src">(IKEA (KALLAX 147x147))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/waiter-station-cabinet-1.jpg" alt="Waiter Station / Sideboard Cabinet" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Waiter Station / Sideboard Cabinet</span><span class="l-pt">Movel de Apoio / Aparador (Estacao de Servico)</span><span class="l-ua">Станція офіціанта / сервант</span></h3>
+<p class="desc"><span class="l-en">Practical white storage cabinet with a wood-effect top, two doors and a drawer. Great as a waiter station, coffee-station base, buffet sideboard or general storage in a cafe, kitchen or office.</span><span class="l-pt">Movel de arrumacao branco pratico com tampo efeito madeira, duas portas e uma gaveta. Otimo como estacao de servico, base de cafe, aparador de buffet ou arrumacao geral em cafe, cozinha ou escritorio.</span><span class="l-ua">Практична біла тумба зі стільницею під дерево, двома дверцятами та шухлядою — станція офіціанта, кавова станція чи буфет.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€50–120</b></div><div class="prow"><span data-l="olx"></span><span>€40-250</span></div><div class="prow"><span data-l="newprice"></span><span>€180 <i class="src">(IKEA (comparable sideboard))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/square-cafe-table-grey-1.jpg" alt="Square Cafe Table (grey top)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Square Cafe Table (grey top)</span><span class="l-pt">Mesa de Cafe Quadrada (tampo cinza)</span><span class="l-ua">Квадратний стіл для кафе (сіра стільниця)</span></h3>
+<p class="desc"><span class="l-en">Square cafe/bistro table with a grey laminate top and a black metal pedestal base - a compact 2-4 seater for a cafe, kitchen or breakout area. Matches the black dining chairs.</span><span class="l-pt">Mesa de cafe/bistro quadrada com tampo laminado cinza e base de pedestal em metal preto - compacta para 2-4 lugares, para cafe, cozinha ou zona de convivio. Combina com as cadeiras pretas.</span><span class="l-ua">Квадратний стіл із сірим ламінованим верхом на чорній металевій опорі — компактний, на 2–4 особи.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–90</b></div><div class="prow"><span data-l="olx"></span><span>€30-100</span></div><div class="prow"><span data-l="newprice"></span><span>€110 <i class="src">(GGM Mobel (bistro table, comparable))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/storage-cabinet-white-sliding-1.jpg" alt="White Sliding-Door Storage Cabinet" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/storage-cabinet-white-sliding-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">White Sliding-Door Storage Cabinet</span><span class="l-pt">Movel de Arrumacao Branco com Portas de Correr</span><span class="l-ua">Біла тумба з розсувними дверцятами</span></h3>
+<p class="desc"><span class="l-en">Low white storage cabinet with two sliding doors and an internal shelf - handy as a counter base, sideboard or back-bar unit. Wipe-clean finish and a compact footprint.</span><span class="l-pt">Movel de arrumacao branco baixo com duas portas de correr e prateleira interior - pratico como base de balcao, aparador ou apoio de bar. Acabamento facil de limpar e formato compacto.</span><span class="l-ua">Низька біла тумба з двома розсувними дверцятами та полицею — як основа стійки, сервант чи бар-модуль.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–90</b></div><div class="prow"><span data-l="olx"></span><span>€40-90</span></div><div class="prow"><span data-l="newprice"></span><span>€150 <i class="src">(Amazon (comparable))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/rectangular-cafe-tables-80cm-1.jpg" alt="Rectangular Cafe Tables (~80 cm)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/rectangular-cafe-tables-80cm-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/rectangular-cafe-tables-80cm-3.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Rectangular Cafe Tables (~80 cm)</span><span class="l-pt">Mesas Retangulares de Cafe (~80 cm)</span><span class="l-ua">Прямокутні столи для кафе (~80 см)</span></h3>
+<p class="desc"><span class="l-en">Rectangular cafe tables with light oak-effect tops and black metal pedestal bases (square foot plate). Compact ~80 cm size, perfect for 2-4 covers in a cafe, bistro or restaurant. Several available (price per table).</span><span class="l-pt">Mesas de cafe retangulares com tampos efeito carvalho claro e bases de coluna em metal preto (chapa quadrada). Tamanho compacto de ~80 cm, perfeitas para 2-4 lugares em cafe, bistro ou restaurante. Varias disponiveis (preco por mesa).</span><span class="l-ua">Столи зі стільницею під світлий дуб на чорній металевій опорі. На 2–4 особи. Є кілька; ціна за стіл.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–80</b></div><div class="prow"><span data-l="olx"></span><span>€30-100</span></div><div class="prow"><span data-l="newprice"></span><span>€110 <i class="src">(GGM Mobel (bistro table, comparable))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/round-cafe-tables-1.jpg" alt="Round Cafe Tables (Wood Top, Cast-Iron Base)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/round-cafe-tables-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/round-cafe-tables-3.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Round Cafe Tables (Wood Top, Cast-Iron Base)</span><span class="l-pt">Mesas Redondas de Cafe (Tampo em Madeira, Base em Ferro)</span><span class="l-ua">Круглі столи для кафе (за шт.)</span></h3>
+<p class="desc"><span class="l-en">Round/oval cafe tables with light oak-effect tops and heavy black cast-iron pedestal bases for stability. Stylish and sturdy - ideal for a cafe, bistro or restaurant. Several available (price per table).</span><span class="l-pt">Mesas de cafe redondas/ovais com tampos efeito carvalho claro e bases de coluna pesadas em ferro fundido preto, para estabilidade. Elegantes e robustas - ideais para cafe, bistro ou restaurante. Varias disponiveis (preco por mesa).</span><span class="l-ua">Круглі/овальні столи зі стільницею під дуб на важких чавунних опорах. Є кілька; ціна за стіл.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–80</b></div><div class="prow"><span data-l="olx"></span><span>€30-100</span></div><div class="prow"><span data-l="newprice"></span><span>€110 <i class="src">(GGM Mobel (bistro table, comparable))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/wooden-bench-1.jpg" alt="Wooden Slatted Bench" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Wooden Slatted Bench</span><span class="l-pt">Banco de Madeira em Reguas</span><span class="l-ua">Дерев&#x27;яна лавка з рейок</span></h3>
+<p class="desc"><span class="l-en">Solid wood slatted bench with a warm natural finish. Sturdy and comfortable, great for an entrance, hallway, garden or extra seating in a cafe or shop.</span><span class="l-pt">Banco robusto em madeira macica com reguas e acabamento natural quente. Solido e confortavel, otimo para entrada, corredor, jardim ou lugares extra num cafe ou loja.</span><span class="l-ua">Лавка з масиву дерева з рейковим сидінням, теплий природний тон. На 2–3 особи, для входу, коридору чи саду.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–80</b></div><div class="prow"><span data-l="olx"></span><span>€25-100</span></div><div class="prow"><span data-l="newprice"></span><span>€100 <i class="src">(IKEA (comparable wood bench))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/side-tables-round-metal-1.jpg" alt="Round Metal Tray Side Tables (pair)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Round Metal Tray Side Tables (pair)</span><span class="l-pt">Mesas de Apoio Redondas em Metal (par)</span><span class="l-ua">Круглі металеві столики (пара)</span></h3>
+<p class="desc"><span class="l-en">Pair of black round metal tray side/end tables with removable tops and slim cross-frame legs - two nesting sizes, ideal beside a sofa or armchair. Sold as a pair.</span><span class="l-pt">Par de mesas de apoio redondas em metal preto com tampos amoviveis e pernas finas em cruz - dois tamanhos encaixaveis, ideais ao lado de um sofa ou poltrona. Vendidas em par.</span><span class="l-ua">Пара чорних металевих столиків-таць зі знімними стільницями, два розміри — біля дивана чи крісла. Продаються парою.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€30–60</b></div><div class="prow"><span data-l="olx"></span><span>€38-58 (pair)</span></div><div class="prow"><span data-l="newprice"></span><span>€40 <i class="src">(IKEA (2x GLADOM))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/coat-stand-bamboo-1.jpg" alt="Bamboo Coat Stand" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Bamboo Coat Stand</span><span class="l-pt">Bengaleiro em Bambu</span><span class="l-ua">Бамбукова вішалка для одягу</span></h3>
+<p class="desc"><span class="l-en">Freestanding bamboo/wood coat stand with upper hooks and a stable tripod base - a light, natural-look piece for an entrance, shop or office.</span><span class="l-pt">Bengaleiro de pe em bambu/madeira com ganchos na parte superior e base tripe estavel - peca leve e de aspeto natural para entrada, loja ou escritorio.</span><span class="l-ua">Підлогова вішалка з бамбука/дерева з гачками та стійкою основою-триногою — легка й природна для входу, магазину чи офісу.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€20–45</b></div><div class="prow"><span data-l="olx"></span><span>€20-50</span></div><div class="prow"><span data-l="newprice"></span><span>€40 <i class="src">(IKEA (MORSNING))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/dining-chairs-black-wood-1.jpg" alt="Black Wooden Dining Chairs (per chair)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/dining-chairs-black-wood-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Black Wooden Dining Chairs (per chair)</span><span class="l-pt">Cadeiras de Refeicao Pretas em Madeira (por cadeira)</span><span class="l-ua">Чорні дерев&#x27;яні стільці (за шт.)</span></h3>
+<p class="desc"><span class="l-en">Set of modern black dining/cafe chairs in ash-effect wood with a gently curved backrest. Sturdy, comfortable and easy to match - ideal for a cafe, restaurant or dining room. Several available; price is per chair.</span><span class="l-pt">Conjunto de cadeiras modernas de refeicao/cafe em madeira com efeito freixo preto e costas ligeiramente curvas. Robustas, confortaveis e faceis de conjugar - ideais para cafe, restaurante ou sala de jantar. Varias disponiveis; preco por cadeira.</span><span class="l-ua">Сучасні чорні стільці з дерева під ясен із вигнутою спинкою. Міцні та зручні. Є кілька; ціна за стілець.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€20–45</b></div><div class="prow"><span data-l="olx"></span><span>€15-50 each</span></div><div class="prow"><span data-l="newprice"></span><span>€50 <i class="src">(IKEA (comparable wood chair))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/coat-stand-yellow-metal-1.jpg" alt="Yellow Metal Coat Stand" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Yellow Metal Coat Stand</span><span class="l-pt">Bengaleiro em Metal Amarelo</span><span class="l-ua">Жовта металева вішалка</span></h3>
+<p class="desc"><span class="l-en">Freestanding coat stand in bright yellow tubular metal with a branching design - a fun, sturdy statement piece for an entrance, shop or studio.</span><span class="l-pt">Bengaleiro de pe em metal tubular amarelo vivo com design ramificado - peca divertida e robusta para entrada, loja ou estudio.</span><span class="l-ua">Підлогова вішалка з яскраво-жовтого трубчастого металу з розгалуженим дизайном — стильна та міцна.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€15–40</b></div><div class="prow"><span data-l="olx"></span><span>€15-40</span></div><div class="prow"><span data-l="newprice"></span><span>€40 <i class="src">(IKEA (BONDSKARET))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Furniture">
+<div class="ph"><img src="images/folding-chairs-black-1.jpg" alt="Black Folding Chairs (per chair)" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/folding-chairs-black-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Furniture</span><span class="l-pt">Mobiliario</span><span class="l-ua">Меблі</span></span></div>
+<div class="body">
+<h3><span class="l-en">Black Folding Chairs (per chair)</span><span class="l-pt">Cadeiras Dobraveis Pretas (por cadeira)</span><span class="l-ua">Чорні розкладні стільці (за шт.)</span></h3>
+<p class="desc"><span class="l-en">Practical black folding chairs with a metal frame and moulded seat/back - fold flat for easy storage. Good for events, overflow seating or small spaces. Price is per chair.</span><span class="l-pt">Cadeiras dobraveis pretas praticas com estrutura em metal e assento/costas em plastico - dobram na horizontal para arrumacao facil. Ideais para eventos, lugares extra ou espacos pequenos. Preco por cadeira.</span><span class="l-ua">Практичні розкладні стільці з металевим каркасом, складаються пласко. Для подій чи додаткових місць. Ціна за стілець.</span></p>
+<p class="cond"><span class="l-en">Used, good</span><span class="l-pt">Usado, bom estado</span><span class="l-ua">Вживаний, гарний стан</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€5–15</b></div><div class="prow"><span data-l="olx"></span><span>€5-15 each</span></div><div class="prow"><span data-l="newprice"></span><span>€30 <i class="src">(IKEA (VIHALS))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Electronics">
+<div class="ph"><img src="images/samsung-tv-75-4k-1.jpg" alt="Samsung 75&quot; 4K Crystal UHD Smart TV" loading="lazy" onclick="openLB(this)"><img class="hidden" src="images/samsung-tv-75-4k-2.jpg" alt="" loading="lazy" onclick="openLB(this)"><button class="nav prev" onclick="cyc(this,-1)">&#10094;</button><button class="nav next" onclick="cyc(this,1)">&#10095;</button><div class="dots"><span class="on"></span><span></span></div><span class="badge"><span class="l-en">Electronics</span><span class="l-pt">Eletronica</span><span class="l-ua">Електроніка</span></span></div>
+<div class="body">
+<h3><span class="l-en">Samsung 75&quot; 4K Crystal UHD Smart TV</span><span class="l-pt">Samsung Smart TV 75&quot; 4K Crystal UHD</span><span class="l-ua">Samsung 75&quot; 4K Smart TV</span></h3>
+<p class="desc"><span class="l-en">Samsung 75-inch Crystal UHD 4K Smart TV (model TU75CU7175U, CU7000/TU7000 series). Big, bright 4K screen with Tizen smart platform and multiple HDMI/USB inputs - ideal for a bar, cafe, waiting area, office or home cinema. Floor stand pictured.</span><span class="l-pt">Smart TV Samsung de 75 polegadas Crystal UHD 4K (modelo TU75CU7175U, serie CU7000/TU7000). Ecra 4K grande e brilhante com plataforma smart Tizen e varias entradas HDMI/USB - ideal para bar, cafe, sala de espera, escritorio ou home cinema. Suporte de chao na foto.</span><span class="l-ua">Samsung Crystal UHD 4K 75″ (TU75CU7175U), платформа Tizen, кілька входів HDMI/USB — для бару, кафе чи дому. Підлогова стійка на фото.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€430–560</b></div><div class="prow"><span data-l="olx"></span><span>€440-600</span></div><div class="prow"><span data-l="newprice"></span><span>€552 <i class="src">(Worten (75&quot; Crystal UHD, current model))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Electronics">
+<div class="ph"><img src="images/jbl-flip5-speaker-1.jpg" alt="JBL Flip 5 Bluetooth Speaker" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Electronics</span><span class="l-pt">Eletronica</span><span class="l-ua">Електроніка</span></span></div>
+<div class="body">
+<h3><span class="l-en">JBL Flip 5 Bluetooth Speaker</span><span class="l-pt">Coluna Bluetooth JBL Flip 5</span><span class="l-ua">Bluetooth-колонка JBL Flip 5</span></h3>
+<p class="desc"><span class="l-en">JBL Flip 5 portable Bluetooth speaker (black) - punchy sound, IPX7 waterproof and USB-C charging. Great for background music at home, in a shop or outdoors.</span><span class="l-pt">Coluna portatil JBL Flip 5 (preta) - som potente, resistente a agua IPX7 e carregamento USB-C. Otima para musica ambiente em casa, na loja ou ao ar livre.</span><span class="l-ua">Портативна колонка JBL Flip 5 (чорна) — потужний звук, водозахист IPX7, зарядка USB-C.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€40–65</b></div><div class="prow"><span data-l="olx"></span><span>€40-70</span></div><div class="prow"><span data-l="newprice"></span><span>€95 <i class="src">(Amazon)</i></span></div></div>
+</div>
+</article><article class="card" data-cat="POS / Retail">
+<div class="ph"><img src="images/thermal-printer-munbyn-1.jpg" alt="MUNBYN Thermal Receipt Printer (WiFi)" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">POS / Retail</span><span class="l-pt">POS / Comercio</span><span class="l-ua">POS / Торгівля</span></span></div>
+<div class="body">
+<h3><span class="l-en">MUNBYN Thermal Receipt Printer (WiFi)</span><span class="l-pt">Impressora Termica de Taloes MUNBYN (WiFi)</span><span class="l-ua">Термопринтер чеків MUNBYN (WiFi)</span></h3>
+<p class="desc"><span class="l-en">MUNBYN 80mm thermal receipt printer with WiFi/network connectivity and auto-cutter - fast, ink-free receipt printing for POS, kitchen or retail.</span><span class="l-pt">Impressora termica de taloes MUNBYN de 80mm com ligacao WiFi/rede e corte automatico - impressao de taloes rapida e sem tinta para POS, cozinha ou comercio.</span><span class="l-ua">Термопринтер 80 мм з WiFi/мережею та автообрізанням — швидкий друк чеків без чорнил для POS чи кухні.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€45–90</b></div><div class="prow"><span data-l="olx"></span><span>€40-90</span></div><div class="prow"><span data-l="newprice"></span><span>€60 <i class="src">(Amazon (ITPP047))</i></span></div></div>
+</div>
+</article><article class="card" data-cat="POS / Retail">
+<div class="ph"><img src="images/cash-drawer-1.jpg" alt="Metal Cash Drawer with Lock" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">POS / Retail</span><span class="l-pt">POS / Comercio</span><span class="l-ua">POS / Торгівля</span></span></div>
+<div class="body">
+<h3><span class="l-en">Metal Cash Drawer with Lock</span><span class="l-pt">Gaveta de Dinheiro Metalica com Fechadura</span><span class="l-ua">Металева грошова скринька із замком</span></h3>
+<p class="desc"><span class="l-en">Black metal POS cash drawer with lock and key. Standard coin and note tray inside, opens electronically via receipt printer or manually with the key. Robust and ready for shop or cafe use.</span><span class="l-pt">Gaveta de dinheiro POS em metal preto com fechadura e chave. Tabuleiro interior para moedas e notas, abre eletronicamente atraves da impressora de taloes ou manualmente com a chave. Robusta e pronta a usar em loja ou cafe.</span><span class="l-ua">Чорна металева POS-скринька для готівки із замком і ключем. Лоток для монет і купюр, відкривається через принтер чеків або ключем.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€20–45</b></div><div class="prow"><span data-l="olx"></span><span>€15-45</span></div><div class="prow"><span data-l="newprice"></span><span>€40 <i class="src">(Amazon)</i></span></div></div>
+</div>
+</article><article class="card" data-cat="Climate / HVAC">
+<div class="ph"><img src="images/air-conditioner-midea-1.jpg" alt="Midea Wall-Mounted Split Air Conditioner" loading="lazy" onclick="openLB(this)"><span class="badge"><span class="l-en">Climate / HVAC</span><span class="l-pt">Climatizacao</span><span class="l-ua">Клімат</span></span></div>
+<div class="body">
+<h3><span class="l-en">Midea Wall-Mounted Split Air Conditioner</span><span class="l-pt">Ar Condicionado Split de Parede Midea</span><span class="l-ua">Настінний спліт-кондиціонер Midea</span></h3>
+<p class="desc"><span class="l-en">Wall-mounted split-system air conditioner by Midea, ideal for a shop, cafe, office or home. Clean white indoor unit with digital temperature display and adjustable louvres for quiet, efficient cooling.</span><span class="l-pt">Ar condicionado split de parede da Midea, ideal para loja, cafe, escritorio ou casa. Unidade interior branca com visor digital de temperatura e lamelas ajustaveis, para uma refrigeracao silenciosa e eficiente.</span><span class="l-ua">Настінний спліт-кондиціонер Midea з цифровим дисплеєм — тихе й ефективне охолодження для магазину, кафе, офісу чи дому.</span></p>
+<p class="cond"><span class="l-en">Used, working</span><span class="l-pt">Usado, a funcionar</span><span class="l-ua">Вживаний, робочий</span></p>
+<div class="prices"><div class="prow main"><span data-l="asking"></span><b>€120–250</b></div><div class="prow"><span data-l="olx"></span><span>€70-400 (mostly 150-300)</span></div><div class="prow"><span data-l="newprice"></span><span>€535 <i class="src">(Web search (Midea 12000 BTU split))</i></span></div></div>
+</div>
+</article>
+</main>
+<div id="lb" onclick="this.classList.remove('open')"><img id="lbimg" alt=""></div>
+<script>
+const L = {"title": {"en": "Cafe Equipment & Furniture for Sale", "pt": "Equipamento e Mobiliario de Cafe para Venda", "ua": "Обладнання та меблі кафе на продаж"}, "subtitle": {"en": "Everything is used and in working order unless noted. Collection in person.", "pt": "Tudo usado e a funcionar, salvo indicacao. Levantamento em mao.", "ua": "Усе вживане та в робочому стані, якщо не вказано інше. Самовивіз."}, "note": {"en": "All prices are approximate and open to discussion in person. olx.pt ranges are based on comparable used listings (Jul 2026); new prices are for reference only.", "pt": "Todos os precos sao aproximados e a combinar pessoalmente. Os intervalos olx.pt baseiam-se em anuncios usados comparaveis (jul. 2026); os precos de novo sao apenas referencia.", "ua": "Усі ціни орієнтовні й обговорюються особисто. Діапазони olx.pt — за порівнянними оголошеннями вживаних товарів (лип. 2026); ціни нових — лише для орієнтиру."}, "asking": {"en": "Asking price", "pt": "Preco pedido", "ua": "Ціна"}, "olx": {"en": "olx.pt used range", "pt": "Intervalo olx.pt (usado)", "ua": "Діапазон olx.pt (вживані)"}, "newprice": {"en": "New (approx.)", "pt": "Novo (aprox.)", "ua": "Нове (прибл.)"}, "source": {"en": "source", "pt": "fonte", "ua": "джерело"}, "onrequest": {"en": "Price on request", "pt": "Preco a combinar", "ua": "Ціна за домовленістю"}, "all": {"en": "All", "pt": "Tudo", "ua": "Усі"}, "condition": {"en": "Condition", "pt": "Estado", "ua": "Стан"}, "items": {"en": "items", "pt": "artigos", "ua": "позицій"}, "contact": {"en": "Contact", "pt": "Contacto", "ua": "Контакт"}};
+let lang = 'en';
+function setLang(l) {
+  lang = l;
+  document.documentElement.setAttribute('data-lang', l);
+  document.querySelectorAll('.langs button').forEach(b => b.classList.toggle('on', b.dataset.lang === l));
+  document.querySelectorAll('[data-l]').forEach(el => { el.textContent = L[el.dataset.l][l]; });
+}
+function flt(btn) {
+  document.querySelectorAll('.chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const f = btn.dataset.f;
+  let n = 0;
+  document.querySelectorAll('.card').forEach(c => {
+    const show = f === '*' || c.dataset.cat === f;
+    c.style.display = show ? '' : 'none';
+    if (show) n++;
+  });
+  document.getElementById('n').textContent = n;
+}
+function cyc(btn, d) {
+  const ph = btn.closest('.ph');
+  const imgs = [...ph.querySelectorAll('img')];
+  const dots = [...ph.querySelectorAll('.dots span')];
+  let i = imgs.findIndex(im => !im.classList.contains('hidden'));
+  imgs[i].classList.add('hidden'); dots[i].classList.remove('on');
+  i = (i + d + imgs.length) % imgs.length;
+  imgs[i].classList.remove('hidden'); dots[i].classList.add('on');
+}
+function openLB(img) {
+  document.getElementById('lbimg').src = img.src;
+  document.getElementById('lb').classList.add('open');
+}
+document.getElementById('n').textContent = document.querySelectorAll('.card').length;
+setLang('en');
+</script>
+</body>
+</html>
